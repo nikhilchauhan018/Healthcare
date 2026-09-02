@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Eye, EyeOff, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { api, setStoredAuth } from '../services/api';
 import { User } from '../types';
+import { MedicalPlusMark } from './BrandLogo';
 
 interface RegisterPageProps {
   onSuccess: (user: User) => void;
@@ -118,9 +119,12 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
 
         {/* Top Brand Logo */}
         <div className="relative z-10">
-          <div className="flex items-baseline space-x-1">
-            <span className="text-2xl font-serif font-bold tracking-tight text-white">Meridian</span>
-            <span className="text-2xl font-serif font-semibold text-[#86CDAF]">Health</span>
+          <div className="flex items-center gap-2.5">
+            <MedicalPlusMark size={28} />
+            <div className="flex items-baseline space-x-1">
+              <span className="text-2xl font-serif font-bold tracking-tight text-white">Meridian</span>
+              <span className="text-2xl font-serif font-semibold text-[#86CDAF]">Health</span>
+            </div>
           </div>
         </div>
 
