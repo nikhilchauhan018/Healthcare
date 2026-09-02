@@ -1,8 +1,0 @@
-{
-  "name": "MeridianHealth",
-  "description": "Healthcare staff management tool for patients, doctors, and patient-doctor assignments.",
-  "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
-}
