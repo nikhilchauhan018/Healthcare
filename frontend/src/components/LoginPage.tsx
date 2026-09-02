@@ -1,0 +1,216 @@
+import React, { useState } from 'react';
+import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
+import { api, setStoredAuth } from '../services/api';
+import { User } from '../types';
+
+interface LoginPageProps {
+  onSuccess: (user: User) => void;
+  onSwitchToRegister: () => void;
+}
+
+export const LoginPage: React.FC<LoginPageProps> = ({
+  onSuccess,
+  onSwitchToRegister,
+}) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!email.trim() || !password) {
+      setError('Please provide both email and password.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await api.auth.login({
+        email: email.trim(),
+        password: password,
+      });
+
+      if (res.success && res.data) {
+        const { user, access, refresh } = res.data;
+        setStoredAuth({ access, refresh }, user);
+        onSuccess({
+          id: user.id || `u-${Date.now()}`,
+          name: user.name || email.split('@')[0],
+          email: user.email || email.trim(),
+          role: 'STAFF',
+          is_staff: true,
+          avatarInitial: (user.name || email).charAt(0).toUpperCase(),
+        });
+      } else {
+        setError(res.error || 'Invalid credentials. Please verify your email and password.');
+      }
+    } catch (err: any) {
+      setError(err.message || 'An error occurred while signing in.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen w-full flex flex-col md:flex-row bg-[#FAF8F5] text-[#1C2B2E] selection:bg-[#2F6F62] selection:text-white">
+      {/* Left Brand Panel */}
+      <div className="w-full md:w-1/2 lg:w-[48%] bg-[#133E2B] text-white p-8 md:p-14 lg:p-18 flex flex-col justify-between relative overflow-hidden">
+        {/* Background concentric geometric lines */}
+        <div className="absolute inset-0 pointer-events-none opacity-15 overflow-hidden">
+          <svg className="w-full h-full" viewBox="0 0 600 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="150" cy="380" r="180" stroke="white" strokeWidth="1.2" />
+            <circle cx="150" cy="380" r="260" stroke="white" strokeWidth="1.2" />
+            <circle cx="150" cy="380" r="340" stroke="white" strokeWidth="1.2" />
+            <circle cx="150" cy="380" r="420" stroke="white" strokeWidth="1.2" />
+          </svg>
+        </div>
+
+        {/* Top Brand Logo */}
+        <div className="relative z-10">
+          <div className="flex items-baseline space-x-1">
+            <span className="text-2xl font-serif font-bold tracking-tight text-white">Meridian</span>
+            <span className="text-2xl font-serif font-semibold text-[#86CDAF]">Health</span>
+          </div>
+        </div>
+
+        {/* Middle Hero Statement */}
+        <div className="my-12 md:my-auto relative z-10 max-w-lg">
+          <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.18]">
+            Every patient record, one assignment away from the right doctor.
+          </h1>
+          <p className="mt-5 text-[#B6D6CA] text-base sm:text-lg font-sans font-normal leading-relaxed">
+            Built for clinics that need to move fast without losing track of who's responsible for what.
+          </p>
+        </div>
+
+        {/* Bottom Metrics */}
+        <div className="relative z-10 pt-8 border-t border-white/10 grid grid-cols-3 gap-4">
+          <div>
+            <div className="text-xl sm:text-2xl font-bold text-white font-mono tracking-tight">128ms</div>
+            <div className="text-[10px] sm:text-xs tracking-wider text-[#A2C7B8] uppercase font-mono mt-1">AVG</div>
+          </div>
+          <div>
+            <div className="text-xl sm:text-2xl font-bold text-white font-mono tracking-tight">99.98%</div>
+            <div className="text-[10px] sm:text-xs tracking-wider text-[#A2C7B8] uppercase font-mono mt-1">UPTIME</div>
+          </div>
+          <div>
+            <div className="text-xl sm:text-2xl font-bold text-white font-mono tracking-tight">4,200+</div>
+            <div className="text-[10px] sm:text-xs tracking-wider text-[#A2C7B8] uppercase font-mono mt-1">RECORDS</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Sign In Form */}
+      <div className="w-full md:w-1/2 lg:w-[52%] flex items-center justify-center p-6 sm:p-10 md:p-14 lg:p-20 bg-[#FAF8F5]">
+        <div className="w-full max-w-md">
+          {/* Header */}
+          <div className="mb-8">
+            <h2 className="text-3xl sm:text-[34px] font-serif font-bold text-[#1C2B2E] tracking-tight">
+              Sign in
+            </h2>
+            <p className="mt-2 text-[#54636A] text-sm sm:text-base font-sans">
+              Enter your credentials to access patient records.
+            </p>
+          </div>
+
+          {/* Feedback message */}
+          {error && (
+            <div className="mb-6 p-3.5 bg-[#FDF2F2] border border-[#F5C6CB] rounded-md flex items-start space-x-3 text-[#A13D3D] text-sm">
+              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+            {/* Email */}
+            <div>
+              <label htmlFor="login-email" className="block text-sm font-medium text-[#2E3C40] mb-1.5">
+                Email
+              </label>
+              <input
+                id="login-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@clinic.com"
+                required
+                className="w-full px-3.5 py-2.5 bg-white border border-[#D5CEC2] rounded-md text-[#1C2B2E] placeholder-[#9E978C] text-base focus:outline-none focus:ring-2 focus:ring-[#1F4B41] focus:border-transparent transition-shadow"
+              />
+            </div>
+
+            {/* Password with View/Hide icon */}
+            <div>
+              <label htmlFor="login-password" className="block text-sm font-medium text-[#2E3C40] mb-1.5">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  id="login-password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="•••••••••"
+                  required
+                  className="w-full pl-3.5 pr-11 py-2.5 bg-white border border-[#D5CEC2] rounded-md text-[#1C2B2E] placeholder-[#9E978C] text-base focus:outline-none focus:ring-2 focus:ring-[#1F4B41] focus:border-transparent transition-shadow"
+                />
+                <button
+                  type="button"
+                  id="btn-toggle-login-password"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7C888D] hover:text-[#1C2B2E] transition-colors p-1"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Submit button */}
+            <div className="pt-2">
+              <button
+                type="submit"
+                id="btn-sign-in"
+                disabled={loading}
+                className="w-full py-3.5 px-4 bg-[#1F4B41] hover:bg-[#163830] text-white font-medium text-base rounded-md transition-colors flex items-center justify-center space-x-2 shadow-sm disabled:opacity-75 cursor-pointer disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>Signing in...</span>
+                  </>
+                ) : (
+                  <span>Sign in</span>
+                )}
+              </button>
+            </div>
+          </form>
+
+          {/* Bottom link */}
+          <div className="mt-8 text-left">
+            <span className="text-[#54636A] text-sm">
+              Don't have an account?{' '}
+            </span>
+            <button
+              type="button"
+              id="link-switch-to-register"
+              onClick={onSwitchToRegister}
+              className="text-[#1F4B41] hover:text-[#133E2B] font-medium text-sm hover:underline cursor-pointer"
+            >
+              Create one
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
